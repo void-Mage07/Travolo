@@ -1,0 +1,210 @@
+.badges-app{
+  min-height:100vh;
+  padding:22px;
+  background:radial-gradient(circle at 50% 0%,#3a2b52 0%,#241a38 45%,#150f24 100%);
+  font-family:var(--font-body);
+  color:#fff6d8;
+}
+
+.badges-shell{
+  max-width:900px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:26px;
+}
+
+/* ---- header ---- */
+.badges-top{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  background:linear-gradient(145deg,#3a2b52,#241a38);
+  border:3px solid var(--gold);
+  border-radius:22px;
+  padding:14px 22px;
+  box-shadow:0 5px 0 #7c5a9b88, 0 0 24px #e3b97833;
+}
+
+.badges-back{
+  width:42px;height:42px;
+  border-radius:50%;
+  background:#fff2c8;
+  color:#3e2415;
+  font-size:20px;
+  font-weight:900;
+  display:grid;place-items:center;
+  box-shadow:0 3px 0 #c7913f;
+  transition:transform .1s ease;
+}
+.badges-back:active{transform:translateY(2px);box-shadow:0 1px 0 #c7913f}
+
+.badges-title{
+  flex:1;
+  margin:0;
+  font:800 28px var(--font-display);
+  text-align:center;
+  color:var(--gold);
+  text-shadow:0 2px 0 #00000055;
+}
+
+.badges-count{
+  border:2px solid var(--gold);
+  border-radius:14px;
+  padding:8px 14px;
+  font-weight:800;
+  font-size:12px;
+  color:var(--gold);
+  white-space:nowrap;
+}
+
+/* ---- board / podium ---- */
+.badges-board{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.badges-podium{
+  position:relative;
+  border:3px solid #e3b97855;
+  border-radius:28px;
+  padding:36px 24px;
+  background:radial-gradient(circle at 50% 30%,#4d3563 0%,#2c2044 70%);
+  overflow:hidden;
+  box-shadow:inset 0 0 40px #00000055;
+}
+
+.podium-glow{
+  position:absolute;
+  top:-40%;left:50%;
+  width:340px;height:340px;
+  transform:translateX(-50%);
+  background:radial-gradient(circle,#f6d99055 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* ---- empty state ---- */
+.badges-empty{
+  position:relative;
+  z-index:1;
+  text-align:center;
+  max-width:380px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+
+.empty-trophy{
+  font-size:64px;
+  filter:drop-shadow(0 6px 10px #00000066);
+  animation:trophy-float 2.4s ease-in-out infinite;
+}
+@keyframes trophy-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+
+.badges-empty h2{
+  margin:6px 0 0;
+  font:800 24px var(--font-display);
+  color:#fff6d8;
+}
+
+.badges-empty p{
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  color:#d9c9ef;
+}
+
+.badges-cta{
+  margin-top:10px;
+  border:none;
+  border-radius:16px;
+  padding:12px 22px;
+  font:800 15px var(--font-body);
+  color:#3e2415;
+  background:linear-gradient(145deg,#f6d990,var(--gold));
+  box-shadow:0 4px 0 #a3812f;
+  transition:transform .1s ease;
+}
+.badges-cta:active{transform:translateY(2px);box-shadow:0 1px 0 #a3812f}
+
+/* ---- grid of medal slots ---- */
+.badges-grid{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:18px;
+}
+
+.badge-slot{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  padding:16px 10px;
+  border-radius:20px;
+}
+
+.badge-medal{
+  width:74px;height:74px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:32px;
+}
+
+.badge-slot.earned .badge-medal{
+  background:radial-gradient(circle at 35% 30%,#fff3ce,var(--gold) 70%);
+  box-shadow:0 0 0 4px #7c5a9b, 0 6px 14px #00000055;
+  animation:medal-shine 1.8s ease-in-out infinite alternate;
+}
+@keyframes medal-shine{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.25)}
+}
+
+.badge-slot.earned b{
+  color:var(--gold);
+  font-size:13px;
+  font-weight:800;
+}
+
+.locked-label{
+  margin:4px 0 -4px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:1px;
+  color:#9d8ab8;
+  text-transform:uppercase;
+  text-align:center;
+}
+
+.locked-grid{
+  background:#1c1530;
+  border:2px dashed #4d3563;
+  border-radius:22px;
+  padding:20px 10px;
+}
+
+.badge-slot.locked .badge-medal{
+  background:#2c2440;
+  color:#6a5c86;
+  box-shadow:inset 0 0 0 3px #3a2f52;
+}
+
+.badge-slot.locked b{
+  color:#6a5c86;
+  font-size:12px;
+  font-weight:800;
+}
+
+@media(max-width:600px){
+  .badges-podium{padding:26px 14px}
+  .badges-title{font-size:22px}
+}
