@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./App.css";
 import Art from "./Art";
+import Dholak from "./Dholak";
+import Profile from "./Profile";
 import Quest from "./Quest";
 import Badges from "./Badges";
+import Quiz from "./quiz";
 import fortMapImg from "./assets/amer-fort-map.svg";
 import rajasthaniBoy from './assets/rajasthani-boy.png';
 
@@ -97,19 +100,157 @@ function Compass() {
 
 export default function App() {
   const [selected, setSelected] = useState(null);
-  // "map" | "art" | "quest" | "badges"
+  // "map" | "art" | "quest" | "badges" | "dholak"
   const [page, setPage] = useState("map");
-  const discoveredCount = places.filter((p) => p.discovered).length;
+  const [xp, setXp] = useState(1200);
 
-  if (page === "art") return <Art onBack={() => setPage("map")} />;
-  if (page === "quest") return <Quest onBack={() => setPage("map")} />;
-  if (page === "badges") return <Badges onBack={() => setPage("map")} />;
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+  const fileInputRef = useRef(null);
+  const [verifiedPlaces, setVerifiedPlaces] = useState([]);
+const [artCompleted, setArtCompleted] = useState(false);
+const [dholakCompleted, setDholakCompleted] = useState(false);
 
+const level = 4;
+
+const discoveredCount = verifiedPlaces.length;
+
+  if (page === "art") {
+  return (
+    <Art
+      onBack={() => setPage("map")}
+      onEarnXP={(amount) => setXp((prev) => prev + amount)}
+    />
+  );
+}
+
+if (page === "dholak") {
+  return (
+    <Dholak
+      onBack={() => setPage("map")}
+      onEarnXP={(amount) => {
+        if (!dholakCompleted) {
+          setXp((prev) => prev + amount);
+          setDholakCompleted(true);
+        }
+      }}
+    />
+  );
+}
+
+if (page === "quest") {
+  return <Quest onBack={() => setPage("map")} />;
+}
+
+if (page === "badges") {
+  return <Badges onBack={() => setPage("map")} />;
+}
+
+if (page === "profile") {
+  return (
+    <Profile
+      xp={xp}
+      onBack={() => setPage("map")}
+    />
+  );
+}
+  const handleVerify = () => {
+  setVerifyResult(null);
+  fileInputRef.current?.click();
+};
+if (page === "quiz") {
+  return (
+    <Quiz
+      onBack={() => setPage("map")}
+      onEarnXP={(amount) => setXp((prev) => prev + amount)}
+    />
+  );
+}
+
+const handleImageUpload = async (event) => {
+  const file = event.target.files?.[0];
+
+  if (!file || !selected) return;
+
+  setVerifying(true);
+  setVerifyResult(null);
+
+  const formData = new FormData();
+
+  formData.append("image", file);
+
+  // Convert UI ID to the class name used by the ResNet model
+  const locationMap = {
+    sheesh: "sheesh_mahal",
+    khass: "diwan_e_khas",
+    sukh: "sukh_niwas",
+    aam: "diwan_e_aam",
+    zenana: "zenana",
+    jaleb: "jaleb_chowk",
+    ganesh: "ganesh_pol",
+    suraj: "suraj_pol",
+  };
+
+  formData.append(
+    "expected_location",
+    locationMap[selected.id]
+  );
+
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/verify",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Verification failed");
+    }
+
+    const result = await response.json();
+
+    setVerifyResult(result);
+    if (result.verified) {
+  setVerifiedPlaces((prev) => {
+    if (prev.includes(selected.id)) {
+      return prev;
+    }
+
+    setXp((currentXP) => currentXP + 100);
+
+    return [...prev, selected.id];
+  });
+}
+
+  } catch (error) {
+    console.error(error);
+
+    setVerifyResult({
+      error: "Could not connect to the verification server."
+    });
+
+  } finally {
+    setVerifying(false);
+
+    // Allows selecting the same image again
+    event.target.value = "";
+  }
+};
   const openPlace = (place) =>
     setSelected((cur) => (cur?.id === place.id ? null : place));
 
   return (
     <div className="fort-app">
+      <input
+  ref={fileInputRef}
+  type="file"
+  accept="image/*"
+  capture="environment"
+  style={{ display: "none" }}
+  onChange={handleImageUpload}
+/>
       <div className="fort-shell">
         <header className="fort-top">
           <div className="signboard-wrap">
@@ -121,15 +262,18 @@ export default function App() {
                   <div className="ribbon">EXPLORE • LEARN • PLAY</div>
                 </div>
           <div className="top-pills">
-            <span>⭐ 1200 XP</span>
+            <span>⭐ {xp} XP</span>
             <span>🛡️ Level 4</span>
-            <button aria-label="Menu">☰</button>
+    
           </div>
         </header>
 
         {/* AI chatbot CTA — sits in the open sky area below the XP box */}
         <div className="chatbot-banner-wrap">
-          <button className="chatbot-banner" onClick={() => alert("Chatbot coming soon!")}>
+          <button
+            className="chatbot-banner"
+            onClick={() => setPage("quiz")}
+             >
             <span className="chatbot-icon">🤖</span>
             <span className="chatbot-text">
               <b>Test Your Knowledge!</b>
@@ -159,9 +303,12 @@ export default function App() {
             >
               <span>🏅</span>Badges
             </button>
-            <button className="nav-item">
-              <span>🧑</span>Profile
-            </button>
+            <button
+  className="nav-item"
+  onClick={() => setPage("profile")}
+>
+  <span>🧑</span>Profile
+</button>
           </nav>
 
           <main className="fort-frame">
@@ -176,14 +323,21 @@ export default function App() {
                 <button
                   key={place.id}
                   className={`map-pin ${
-                    selected?.id === place.id ? "chosen" : ""
-                  } ${place.discovered ? "found" : ""}`}
+                selected?.id === place.id ? "chosen" : ""
+                   } ${
+                     verifiedPlaces.includes(place.id) ? "verified" : "unverified"
+                    }`}
                   style={{ left: `${place.x}%`, top: `${place.y}%` }}
                   onClick={() => openPlace(place)}
                 >
                   <span className="pin-drop" aria-hidden="true">
-                    <i className="pin-icon">{place.icon}</i>
-                  </span>
+
+                        {verifiedPlaces.includes(place.id) ? (
+                         <i className="pin-icon">{place.icon}</i>
+                          ) : (
+                         <i className="pin-icon">?</i>
+                          )}
+                          </span>
                   <b>{place.name}</b>
                 </button>
               ))}
@@ -229,9 +383,64 @@ export default function App() {
                   <p className="place-text">{selected.text}</p>
 
                   
-                  <button className="card-action verify">
-                    <span>🔍</span> Verify
-                  </button>
+                  <button
+             className="card-action verify"
+              onClick={handleVerify}
+              disabled={verifying}
+              >
+             <span>🔍</span>
+               {verifying ? " Checking..." : " Verify"}
+               </button>
+               {verifyResult && !verifyResult.error && (
+  <div
+    className={`verification-result ${
+      verifyResult.verified ? "success" : "failure"
+    }`}
+  >
+    {verifyResult.verified ? (
+      <>
+        <h3>🎉 Location Verified!</h3>
+
+        <p>
+          You found <b>{selected.name}</b>!
+        </p>
+
+        <strong>⭐ +100 XP</strong>
+      </>
+    ) : (
+      <>
+        <h3>❌ Not Verified</h3>
+
+        <p>
+          Expected: <b>{selected.name}</b>
+        </p>
+
+        <p>
+          Detected:{" "}
+          <b>{verifyResult.predicted_location}</b>
+        </p>
+
+        <p>
+          Confidence:{" "}
+          <b>
+            {Math.round(verifyResult.confidence * 100)}%
+          </b>
+        </p>
+
+        <small>
+          Try taking a clearer photo of the specific spot.
+        </small>
+      </>
+    )}
+  </div>
+)}
+
+{verifyResult?.error && (
+  <div className="verification-result failure">
+    <h3>⚠️ Verification Error</h3>
+    <p>{verifyResult.error}</p>
+  </div>
+)}
                   {selected.id === "sheesh" && (
                     <button
                       className="card-action art"
@@ -255,9 +464,12 @@ export default function App() {
               to explore its story!
             </span>
           </div>
-          <button className="dholak">
-            ♪ <b>🥁 PLAY DHOLAK</b> ♪
-          </button>
+          <button
+           className="dholak"
+           onClick={() => setPage("dholak")}
+            >
+               ♪ <b>🥁 PLAY DHOLAK</b> ♪
+           </button>
           <div className="explorer">
             <b>🏰 FORT EXPLORER</b>
             <small>

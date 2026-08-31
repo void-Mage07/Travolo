@@ -231,19 +231,7 @@ button{font:inherit;cursor:pointer;background:none;border:0;color:inherit}
   box-shadow:0 4px 0 var(--pin-red-dark),0 0 0 5px #ffe08acc;
 }
 .map-pin.chosen b{background:#fff0c0;border-color:#bd4d31}
-.map-pin.found .pin-drop:after{
-  content:"✓";
-  position:absolute;
-  top:-8px;right:-8px;
-  width:16px;height:16px;
-  border-radius:50%;
-  background:var(--verify-green);
-  color:#fff;
-  font-size:10px;
-  display:grid;place-items:center;
-  border:2px solid #fff;
-  transform:rotate(45deg);
-}
+
 
 /* ---- hint ---- */
 .map-hint{
@@ -418,4 +406,35 @@ button{font:inherit;cursor:pointer;background:none;border:0;color:inherit}
 @media(max-width:760px){
   .chatbot-banner-wrap{justify-content:center}
   .chatbot-banner{max-width:100%}
+}
+.verification-result {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  text-align: center;
+  border: 2px solid;
+}
+
+.verification-result.success {
+  background: #fff7d6;
+  border-color: #e4b52c;
+}
+
+.verification-result.failure {
+  background: #fff0ed;
+  border-color: #d96b5f;
+}
+
+.verification-result h3 {
+  margin: 0 0 8px;
+}
+
+.verification-result p {
+  margin: 5px 0;
+}
+
+.verification-result strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.2rem;
 }

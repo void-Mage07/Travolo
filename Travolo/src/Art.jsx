@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useEffect, useRef } from "react";
 import "./Art.css";
 
 const shapes = ["triangle", "diamond", "circle"];
@@ -9,7 +9,7 @@ const slots = [
   ["circle", 18, 38], ["triangle", 30, 23], ["diamond", 50, 29], ["circle", 50, 71],
 ];
 
-export default function Art({ onBack }) {
+export default function Art({ onBack, onEarnXP }) {
   const [selected, setSelected] = useState(null);
   const [placements, setPlacements] = useState({});
   const [message, setMessage] = useState("Choose a mirror piece and place it on the same shaped outline.");
@@ -24,6 +24,14 @@ export default function Art({ onBack }) {
     setMessage(placedCount + 1 === 12 ? "You did it! Your Sheesh Mahal mirror art is sparkling!" : "Wonderful match! Keep going.");
   };
   const complete = placedCount === 12;
+  const xpAwarded = useRef(false);
+
+useEffect(() => {
+  if (complete && !xpAwarded.current) {
+    xpAwarded.current = true;
+    onEarnXP?.(100);
+  }
+}, [complete, onEarnXP]);
   return <div className="art-page">
     <header className="art-header"><button onClick={onBack}>← &nbsp;Back to Fort</button><div><small>TRAVOLO • CREATIVE QUEST</small><h1>✦ Make Your Mirror Art</h1></div><b>⭐ &nbsp;+100 XP</b></header>
     <section className="art-intro"><span className="art-kid">👩‍🎨</span><div><h2>Let’s create a Sheesh Mahal masterpiece! 🪞</h2><p>Drag a mirror piece onto the matching shape around the artwork. Complete the circle to finish your art!</p></div></section>
