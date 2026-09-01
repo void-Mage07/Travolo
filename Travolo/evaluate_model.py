@@ -115,13 +115,14 @@ for class_name in classes:
         continue
 
     images = [
-        p for p in folder.iterdir()
-        if p.suffix.lower() in [
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp"
-        ]
+    p for p in folder.iterdir()
+    if p.suffix.lower() in [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp",
+        ".jfif"
+         ]
     ]
 
     print(f"\n[{class_name}] {len(images)} images")

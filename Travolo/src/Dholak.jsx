@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./Dholak.css";
 
-export default function Dholak({ onBack, onEarnXP }) {
+export default function Dholak({ onBack, onEarnXP , onComplete}) {
   const audioContextRef = useRef(null);
 
   const [leftHit, setLeftHit] = useState(false);
@@ -16,107 +16,113 @@ useEffect(() => {
 
     // Give 20 XP to the main Travolo XP system
     onEarnXP?.(20);
+
+    // Tell App.jsx that the Dholak challenge is complete
+    onComplete?.();
   }
-}, [gameCompleted, onEarnXP]);
+}, [gameCompleted, onEarnXP, onComplete]);
 
   // Create AudioContext only after user interaction
-  const getAudioContext = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (
-        window.AudioContext || window.webkitAudioContext
-      )();
-    }
-
-    return audioContextRef.current;
-  };
-
-  // Deep bass dholak sound
-  const playBass = () => {
-    const ctx = getAudioContext();
-
-    if (ctx.state === "suspended") {
-      ctx.resume();
-    }
-
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    oscillator.type = "sine";
-
-    oscillator.frequency.setValueAtTime(150, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      65,
-      ctx.currentTime + 0.18
-    );
-
-    gain.gain.setValueAtTime(0.9, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      ctx.currentTime + 0.25
-    );
-
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-
-    oscillator.start();
-    oscillator.stop(ctx.currentTime + 0.25);
-
-    animateHit("left");
-
-    setScore((prev) => {
-  const newScore = prev + 10;
-
-  if (newScore >= 100) {
-    setGameCompleted(true);
+  const getAudioContext = async () => {
+  if (!audioContextRef.current) {
+    audioContextRef.current = new (
+      window.AudioContext || window.webkitAudioContext
+    )();
   }
 
-  return newScore;
-});
-  };
+  const ctx = audioContextRef.current;
+
+  if (ctx.state === "suspended") {
+    await ctx.resume();
+  }
+
+  return ctx;
+};
+  // Deep bass dholak sound
+  const playBass = async () => {
+    if (gameCompleted) return;
+  const ctx = await getAudioContext();
+
+  const now = ctx.currentTime;
+
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  oscillator.type = "sine";
+
+  oscillator.frequency.setValueAtTime(140, now);
+  oscillator.frequency.exponentialRampToValueAtTime(
+    55,
+    now + 0.2
+  );
+
+  gain.gain.setValueAtTime(0.9, now);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    now + 0.3
+  );
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + 0.3);
+
+  animateHit("left");
+
+  setScore((prev) => {
+    const newScore = prev + 10;
+
+    if (newScore >= 100) {
+      setGameCompleted(true);
+    }
+
+    return newScore;
+  });
+};
 
   // Higher pitched dholak sound
-  const playTreble = () => {
-    const ctx = getAudioContext();
+  const playTreble = async () => {
+    if (gameCompleted) return;
+  const ctx = await getAudioContext();
 
-    if (ctx.state === "suspended") {
-      ctx.resume();
+  const now = ctx.currentTime;
+
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  oscillator.type = "triangle";
+
+  oscillator.frequency.setValueAtTime(300, now);
+  oscillator.frequency.exponentialRampToValueAtTime(
+    130,
+    now + 0.15
+  );
+
+  gain.gain.setValueAtTime(0.8, now);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    now + 0.2
+  );
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + 0.2);
+
+  animateHit("right");
+
+  setScore((prev) => {
+    const newScore = prev + 10;
+
+    if (newScore >= 100) {
+      setGameCompleted(true);
     }
 
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    oscillator.type = "triangle";
-
-    oscillator.frequency.setValueAtTime(280, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      150,
-      ctx.currentTime + 0.12
-    );
-
-    gain.gain.setValueAtTime(0.7, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      ctx.currentTime + 0.16
-    );
-
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-
-    oscillator.start();
-    oscillator.stop(ctx.currentTime + 0.16);
-
-    animateHit("right");
-
-    setScore((prev) => {
-  const newScore = prev + 10;
-
-  if (newScore >= 100) {
-    setGameCompleted(true);
-  }
-
-  return newScore;
-});
-  };
+    return newScore;
+  });
+};
 
   // Visual animation when drum is hit
   const animateHit = (side) => {
@@ -137,24 +143,24 @@ useEffect(() => {
 
   // Keyboard controls
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.repeat) return;
+  const handleKeyDown = (event) => {
+    if (event.repeat) return;
 
-      if (event.key.toLowerCase() === "a") {
-        playBass();
-      }
+    if (event.key.toLowerCase() === "a") {
+      playBass();
+    }
 
-      if (event.key.toLowerCase() === "d") {
-        playTreble();
-      }
-    };
+    if (event.key.toLowerCase() === "d") {
+      playTreble();
+    }
+  };
 
-    window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keydown", handleKeyDown);
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  });
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
 
   return (
     <div className="dholak-page">

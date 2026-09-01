@@ -9,7 +9,7 @@ const slots = [
   ["circle", 18, 38], ["triangle", 30, 23], ["diamond", 50, 29], ["circle", 50, 71],
 ];
 
-export default function Art({ onBack, onEarnXP }) {
+export default function Art({ onBack, onEarnXP , onComplete}) {
   const [selected, setSelected] = useState(null);
   const [placements, setPlacements] = useState({});
   const [message, setMessage] = useState("Choose a mirror piece and place it on the same shaped outline.");
@@ -29,9 +29,14 @@ export default function Art({ onBack, onEarnXP }) {
 useEffect(() => {
   if (complete && !xpAwarded.current) {
     xpAwarded.current = true;
+
+    // Give 100 XP
     onEarnXP?.(100);
+
+    // Tell App.jsx that the art game is complete
+    onComplete?.();
   }
-}, [complete, onEarnXP]);
+}, [complete, onEarnXP, onComplete]);
   return <div className="art-page">
     <header className="art-header"><button onClick={onBack}>← &nbsp;Back to Fort</button><div><small>TRAVOLO • CREATIVE QUEST</small><h1>✦ Make Your Mirror Art</h1></div><b>⭐ &nbsp;+100 XP</b></header>
     <section className="art-intro"><span className="art-kid">👩‍🎨</span><div><h2>Let’s create a Sheesh Mahal masterpiece! 🪞</h2><p>Drag a mirror piece onto the matching shape around the artwork. Complete the circle to finish your art!</p></div></section>

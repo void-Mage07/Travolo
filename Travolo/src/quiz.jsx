@@ -24,7 +24,7 @@ const questions = [
   },
 ];
 
-export default function Quiz({ onBack, onEarnXP }) {
+export default function Quiz({ onBack, onEarnXP, onComplete  }) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
@@ -44,13 +44,14 @@ export default function Quiz({ onBack, onEarnXP }) {
   };
 
   const nextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelected(null);
-    } else {
-      setFinished(true);
-    }
-  };
+  if (currentQuestion < questions.length - 1) {
+    setCurrentQuestion((prev) => prev + 1);
+    setSelected(null);
+  } else {
+    setFinished(true);
+    onComplete?.();
+  }
+};
 
   if (finished) {
     return (

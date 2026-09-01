@@ -18,7 +18,9 @@ const places = [
     y: 33,
     discovered: true,
     text: "This sparkly Mirror Palace was the queen's favourite room! Just one tiny candle could make a thousand little mirrors twinkle like stars.",
+    photoTarget: "Take a photo of the Magic Flower engraving inside Sheesh Mahal.",
   },
+
   {
     id: "khass",
     name: "Diwan-e-Khass",
@@ -27,7 +29,9 @@ const places = [
     y: 24,
     discovered: true,
     text: "This was the king's private meeting room, where he welcomed special guests to talk about important royal secrets.",
+    photoTarget: "Take a photo of the main entrance of Diwan-e-Khass.",
   },
+
   {
     id: "sukh",
     name: "Sukh Niwas",
@@ -36,7 +40,9 @@ const places = [
     y: 28,
     discovered: false,
     text: "Feeling hot? This clever palace had water flowing through its walls to keep the royal family cool all summer long.",
+    photoTarget: "Take a photo of the water-channel cooling system inside Sukh Niwas.",
   },
+
   {
     id: "aam",
     name: "Diwan-e-Aam",
@@ -45,7 +51,9 @@ const places = [
     y: 46,
     discovered: true,
     text: "This grand pillared hall was where the king listened to his people's worries, kind of like a royal town hall meeting!",
+    photoTarget: "Take a photo showing the a set  of pillars in (2-4 pillars) of Diwan-e-Aam.",
   },
+
   {
     id: "zenana",
     name: "Zenana",
@@ -54,7 +62,9 @@ const places = [
     y: 47,
     discovered: false,
     text: "A peaceful, private courtyard where the queens and royal ladies relaxed, away from the busy fort outside.",
+    photoTarget: "Take a photo of the Baradari pavilion in the Zenana courtyard.",
   },
+
   {
     id: "jaleb",
     name: "Jaleb Chowk",
@@ -63,7 +73,9 @@ const places = [
     y: 62,
     discovered: false,
     text: "Grab your shield! This huge courtyard is where brave soldiers lined up with their swords before marching off to duty.",
+    photoTarget: "Take a photo of the open area of Jaleb Chowk.",
   },
+
   {
     id: "ganesh",
     name: "Ganesh Pol",
@@ -72,7 +84,9 @@ const places = [
     y: 74,
     discovered: false,
     text: "This colourful painted gateway welcomed everyone into the king's private palace — decorated for extra good luck!",
+    photoTarget: "Take a photo of the Ganesh Pol entrance and its decorated gateway.",
   },
+
   {
     id: "suraj",
     name: "Suraj Pol",
@@ -81,6 +95,7 @@ const places = [
     y: 75,
     discovered: false,
     text: "The Sun Gate! Facing the morning sunrise, this grand gate greeted royal processions and visitors arriving at dawn.",
+    photoTarget: "Take a photo of the Suraj Pol entrance.",
   },
 ];
 
@@ -101,6 +116,10 @@ function Compass() {
 export default function App() {
   const [selected, setSelected] = useState(null);
   // "map" | "art" | "quest" | "badges" | "dholak"
+  const [completedLocations, setCompletedLocations] = useState(false);
+  const [completedInstrument, setCompletedInstrument] = useState(false);
+  const [completedArt, setCompletedArt] = useState(false);
+  const [completedQuiz, setCompletedQuiz] = useState(false);
   const [page, setPage] = useState("map");
   const [xp, setXp] = useState(1200);
 
@@ -108,8 +127,7 @@ export default function App() {
   const [verifying, setVerifying] = useState(false);
   const fileInputRef = useRef(null);
   const [verifiedPlaces, setVerifiedPlaces] = useState([]);
-const [artCompleted, setArtCompleted] = useState(false);
-const [dholakCompleted, setDholakCompleted] = useState(false);
+
 
 const level = 4;
 
@@ -120,6 +138,7 @@ const discoveredCount = verifiedPlaces.length;
     <Art
       onBack={() => setPage("map")}
       onEarnXP={(amount) => setXp((prev) => prev + amount)}
+      onComplete={() => setCompletedArt(true)}
     />
   );
 }
@@ -128,12 +147,8 @@ if (page === "dholak") {
   return (
     <Dholak
       onBack={() => setPage("map")}
-      onEarnXP={(amount) => {
-        if (!dholakCompleted) {
-          setXp((prev) => prev + amount);
-          setDholakCompleted(true);
-        }
-      }}
+      onEarnXP={(amount) => setXp((prev) => prev + amount)}
+      onComplete={() => setCompletedInstrument(true)}
     />
   );
 }
@@ -143,13 +158,19 @@ if (page === "quest") {
 }
 
 if (page === "badges") {
-  return <Badges onBack={() => setPage("map")} />;
+  return <Badges 
+      onBack={() => setPage("map")}
+      completedLocations={completedLocations}
+      completedInstrument={completedInstrument}
+      completedArt={completedArt}
+      completedQuiz={completedQuiz}
+   />;
 }
 
 if (page === "profile") {
   return (
     <Profile
-      xp={xp}
+      totalXP={xp}
       onBack={() => setPage("map")}
     />
   );
@@ -163,6 +184,7 @@ if (page === "quiz") {
     <Quiz
       onBack={() => setPage("map")}
       onEarnXP={(amount) => setXp((prev) => prev + amount)}
+      onComplete={() => setCompletedQuiz(true)}
     />
   );
 }
@@ -220,7 +242,14 @@ const handleImageUpload = async (event) => {
 
     setXp((currentXP) => currentXP + 100);
 
-    return [...prev, selected.id];
+    const updatedPlaces = [...prev, selected.id];
+
+    // All locations have now been verified
+    if (updatedPlaces.length === places.length) {
+      setCompletedLocations(true);
+    }
+
+    return updatedPlaces;
   });
 }
 
@@ -348,14 +377,14 @@ const handleImageUpload = async (event) => {
       src={rajasthaniBoy} 
       alt="Rajasthani boy sticker" 
       style={{
-        width: '5.5em',          
-        height: '5.5em',
-        objectFit: 'contain',     
-        mixBlendMode: 'multiply' ,
-        transform: 'scale(2.6)', 
+        width: '70px',
+        height: '70px',
+        objectFit: 'contain',
+        mixBlendMode: 'multiply',
+        transform: 'scale(1.8)',
         transformOrigin: 'center center',
-        marginLeft: '25px',
-        marginRight: '35px'
+        marginLeft: '10px',
+        marginRight: '10px'
       }} 
     />
     <p>
@@ -383,14 +412,23 @@ const handleImageUpload = async (event) => {
                   <p className="place-text">{selected.text}</p>
 
                   
-                  <button
-             className="card-action verify"
-              onClick={handleVerify}
-              disabled={verifying}
-              >
-             <span>🔍</span>
-               {verifying ? " Checking..." : " Verify"}
-               </button>
+                 <div className="photo-target">
+  <span className="photo-target-icon">📸</span>
+
+  <div>
+    <strong>What should I photograph?</strong>
+    <p>{selected.photoTarget}</p>
+  </div>
+</div>
+
+<button
+  className="card-action verify"
+  onClick={handleVerify}
+  disabled={verifying}
+>
+  <span>🔍</span>
+  {verifying ? " Checking..." : " Verify"}
+</button> 
                {verifyResult && !verifyResult.error && (
   <div
     className={`verification-result ${

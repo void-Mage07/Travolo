@@ -110,7 +110,20 @@ val_transform = transforms.Compose([
         [0.229, 0.224, 0.225]
     )
 ])
+# ============================================================
+# SUPPORTED IMAGE EXTENSIONS
+# ============================================================
 
+VALID_EXTENSIONS = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".jfif",
+}
+
+def is_valid_image(path):
+    return Path(path).suffix.lower() in VALID_EXTENSIONS
 
 # ============================================================
 # 5. LOAD DATASET
@@ -127,12 +140,14 @@ if not DATASET_DIR.exists():
 
 full_dataset_train = datasets.ImageFolder(
     DATASET_DIR,
-    transform=train_transform
+    transform=train_transform,
+    is_valid_file=is_valid_image
 )
 
 full_dataset_val = datasets.ImageFolder(
     DATASET_DIR,
-    transform=val_transform
+    transform=val_transform,
+    is_valid_file=is_valid_image
 )
 
 classes = full_dataset_train.classes
@@ -143,6 +158,21 @@ for i, name in enumerate(classes):
     print(i, "->", name)
 
 print("\nTotal images:", len(full_dataset_train))
+
+print("\nImages per class:")
+
+class_counts = {}
+
+for class_name in classes:
+    count = sum(
+        1
+        for path, label in full_dataset_train.samples
+        if classes[label] == class_name
+    )
+
+    class_counts[class_name] = count
+
+    print(f"  {class_name}: {count}")
 
 
 # ============================================================
