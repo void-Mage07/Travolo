@@ -10,18 +10,20 @@ export default function Dholak({ onBack, onEarnXP , onComplete}) {
   const [xp, setXp] = useState(0);
   const [gameCompleted, setGameCompleted] = useState(false);
 const xpAwarded = useRef(false);
-useEffect(() => {
-  if (gameCompleted && !xpAwarded.current) {
-    xpAwarded.current = true;
+useEffect(() => { 
+  if (gameCompleted && !xpAwarded.current) { 
+    xpAwarded.current = true; 
+
+    // Update XP shown inside Dholak
+    setXp(20);
 
     // Give 20 XP to the main Travolo XP system
-    onEarnXP?.(20);
+    onEarnXP?.(20); 
 
     // Tell App.jsx that the Dholak challenge is complete
-    onComplete?.();
-  }
+    onComplete?.(); 
+  } 
 }, [gameCompleted, onEarnXP, onComplete]);
-
   // Create AudioContext only after user interaction
   const getAudioContext = async () => {
   if (!audioContextRef.current) {

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./App.css";
 import Art from "./Art";
 import Dholak from "./Dholak";
@@ -127,7 +127,7 @@ export default function App() {
   const [verifying, setVerifying] = useState(false);
   const fileInputRef = useRef(null);
   const [verifiedPlaces, setVerifiedPlaces] = useState([]);
-
+  const verifyingPlaceRef = useRef(null);
 
 const level = 4;
 
@@ -193,7 +193,8 @@ const handleImageUpload = async (event) => {
   const file = event.target.files?.[0];
 
   if (!file || !selected) return;
-
+  const verificationPlaceId = selected.id;
+  verifyingPlaceRef.current = verificationPlaceId;
   setVerifying(true);
   setVerifyResult(null);
 
@@ -232,7 +233,12 @@ const handleImageUpload = async (event) => {
     }
 
     const result = await response.json();
-
+    if(
+  verifyingPlaceRef.current !== verificationPlaceId ||
+  selected?.id !== verificationPlaceId
+  ) {
+  return;
+}
     setVerifyResult(result);
     if (result.verified) {
   setVerifiedPlaces((prev) => {
@@ -262,13 +268,31 @@ const handleImageUpload = async (event) => {
 
   } finally {
     setVerifying(false);
-
+    if (verifyingPlaceRef.current === verificationPlaceId) {
+    setVerifying(false);
+  }
     // Allows selecting the same image again
     event.target.value = "";
   }
 };
-  const openPlace = (place) =>
-    setSelected((cur) => (cur?.id === place.id ? null : place));
+ const openPlace = (place) => {
+  setSelected((cur) => {
+    // Clicking the currently open location closes it
+    if (cur?.id === place.id) {
+      setVerifyResult(null);
+      setVerifying(false);
+      verifyingPlaceRef.current = null;
+      return null;
+    }
+
+    // Opening a new location must clear the previous verification result
+    setVerifyResult(null);
+    setVerifying(false);
+    verifyingPlaceRef.current = place.id;
+
+    return place;
+  });
+};
 
   return (
     <div className="fort-app">
